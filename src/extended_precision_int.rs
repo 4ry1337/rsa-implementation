@@ -8,20 +8,20 @@ use std::ops::Mul;
 use std::ops::Rem;
 use std::ops::Sub;
 
-pub struct ExtendedPrecisionInt<'_>(&[u8]);
+pub struct ExtendedPrecisionInt(Vec<u8>);
 
 impl ExtendedPrecisionInt {
     pub fn from(digit_str: &str) -> ExtendedPrecisionInt {
-        let mut digits: Vec<u8> = digit_str
-            .chars()
-            .map(|c| c.to_digit(10).unwrap() as u8)
-            .collect();
-
-        while digits[0] == 0 && digits.len() > 1 {
+        let mut digits: Vec<u8> = Vec::new();
+        for c in digit_str.chars() {
+            if let Some(digit) = c.to_digit(10) {
+                digits.push(digit as u8)
+            }
+        }
+        while digits.first() == Some(&0) {
             digits.remove(0);
         }
-
-        Self(&digits)
+        Self(digits)
     }
     pub fn rand(n: u32) -> ExtendedPrecisionInt {
         let mut rng = rand::thread_rng();
@@ -31,7 +31,7 @@ impl ExtendedPrecisionInt {
         for _ in 1..max {
             digits.push(rng.gen_range(0..9));
         }
-        Self(&digits)
+        Self(digits)
     }
     pub fn parity(&self) {
         if self.0[self.0.len() - 1] % 2 == 1 {
@@ -44,7 +44,7 @@ impl ExtendedPrecisionInt {
 
 impl fmt::Display for ExtendedPrecisionInt {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for digit in self.0 {
+        for digit in &self.0 {
             write!(f, "{}", digit)?;
         }
         Ok(())
@@ -56,8 +56,8 @@ impl Add for ExtendedPrecisionInt {
     fn add(self, other: Self) -> Self {
         let mut result = Vec::new();
         let mut carry = 0;
-        let a: Vec<u8> = self.0.iter().copied().rev().collect();
-        let b: Vec<u8> = other.0.iter().copied().rev().collect();
+        let a: Vec<u8> = self.0.into_iter().rev().collect();
+        let b: Vec<u8> = other.0.into_iter().rev().collect();
         let n = std::cmp::max(a.len(), b.len());
         for i in 0..n {
             let a_digit = if i < a.len() { a[i] } else { 0 };
@@ -70,18 +70,18 @@ impl Add for ExtendedPrecisionInt {
             result.push(carry);
         }
         result.reverse();
-        Self(&result)
+        Self(result)
     }
 }
 
 impl Sub for ExtendedPrecisionInt {
     type Output = Self;
     fn sub(self, rhs: Self) -> Self {
-        let mut result = Vec::new();
-        let mut carry = 0;
+        let mut result: Vec<u8> = Vec::new();
+        let mut carry: u8 = 0;
         assert!(self >= rhs, "lhs must be larger than rhs");
-        let l: Vec<u8> = self.0.iter().copied().rev().collect();
-        let r: Vec<u8> = rhs.0.iter().copied().rev().collect();
+        let l: Vec<u8> = self.0.into_iter().rev().collect();
+        let r: Vec<u8> = rhs.0.into_iter().rev().collect();
         for i in 0..l.len() {
             let l_digit = l[i];
             let r_digit = if i < r.len() { r[i] + carry } else { 0 + carry };
@@ -101,23 +101,18 @@ impl Sub for ExtendedPrecisionInt {
             result.pop();
         }
         result.reverse();
-        Self(&result)
+        Self(result)
     }
 }
 
 impl Mul for ExtendedPrecisionInt {
-    // The multiplication of rational numbers is a closed operation.
     type Output = Self;
 
     fn mul(self, rhs: Self) -> Self {
-        if self.0.is_empty() || rhs.0.is_empty() {
-            return Self(&[]);
-        };
-
         let mut result = vec![0; self.0.len() + rhs.0.len()];
 
-        let l: Vec<u8> = self.0.iter().copied().rev().collect();
-        let r: Vec<u8> = rhs.0.iter().copied().rev().collect();
+        let l: Vec<u8> = self.0.into_iter().rev().collect();
+        let r: Vec<u8> = rhs.0.into_iter().rev().collect();
         for (i, &a) in l.iter().enumerate() {
             let mut carry = 0;
             for (j, &b) in r.iter().enumerate() {
@@ -134,7 +129,7 @@ impl Mul for ExtendedPrecisionInt {
 
         result.reverse();
 
-        Self(&result)
+        Self(result)
     }
 }
 
@@ -159,7 +154,7 @@ fn div_helper(
     if a < b {
         return (ExtendedPrecisionInt::from("0"), a);
     }
-    let (mut q, r) = div_helper(a, ExtendedPrecisionInt::from("2") * b);
+    let (mut q, r) = div_helper(a, ExtendedPrecisionInt::from("2") * b.clone());
     q = ExtendedPrecisionInt::from("2") * q;
     if r < b {
         return (q, r);
@@ -195,3 +190,9 @@ impl PartialEq for ExtendedPrecisionInt {
 }
 
 impl Eq for ExtendedPrecisionInt {}
+
+impl Clone for ExtendedPrecisionInt {
+    fn clone(&self) -> Self {
+        Self(self.0.clone())
+    }
+}

@@ -6,12 +6,12 @@ mod extended_precision_int;
 mod rsa;
 
 fn main() {
-    let n = ExtendedPrecisionInt::from("3713");
-    let m = ExtendedPrecisionInt::from("2003");
-    let e = 7;
-    let d = 2563;
-    let em = encryption(n, e, m);
+    let em = encryption(
+        ExtendedPrecisionInt::from("21"),
+        5,
+        ExtendedPrecisionInt::from("18"),
+    );
     println!("{em}");
-    let dm = decryption(n, d, em);
+    let dm = decryption(ExtendedPrecisionInt::from("21"), 5, em);
     println!("{dm}")
 }
