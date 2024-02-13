@@ -1,8 +1,8 @@
 use crate::extended_precision_int::*;
 use crate::utils::*;
 pub struct RSA {
-    n: ExtendedPrecisionInt,
-    e: u32,
+    pub n: ExtendedPrecisionInt,
+    pub e: Vec<u32>,
     d: u32,
 }
 
@@ -12,17 +12,17 @@ impl RSA {
             println!("p and q must be prime numbers");
         }
         let n = p * q;
-        let mut e = 0;
+        let mut e: Vec<u32> = vec![];
         let totient = (p - 1) * (q - 1);
         for i in 2..totient {
             if gcd(i, totient) == 1 {
-                e = i;
-                break;
+                e.push(i);
             }
         }
+        let x = e[0];
         let mut i = 0;
         let d = loop {
-            if (i * e) % totient == 1 {
+            if (i * x) % totient == 1 {
                 break i;
             }
             i += 1;
@@ -37,7 +37,7 @@ impl RSA {
 
     pub fn encryption(&self, m: ExtendedPrecisionInt) -> ExtendedPrecisionInt {
         let mut em = ExtendedPrecisionInt::from("1");
-        for _ in 0..self.e {
+        for _ in 0..self.e[0] {
             em = em * m.clone();
         }
         em = em % self.n.clone();

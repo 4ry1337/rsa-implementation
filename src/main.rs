@@ -6,8 +6,8 @@ mod rsa;
 mod utils;
 
 fn main() {
-    let rsa = RSA::new(3, 7);
-    let m = ExtendedPrecisionInt::from("2");
+    let rsa = RSA::new(17, 19);
+    let m = ExtendedPrecisionInt::from("123");
     println!("{m}");
     let em = rsa.encryption(m);
     println!("{em}");
