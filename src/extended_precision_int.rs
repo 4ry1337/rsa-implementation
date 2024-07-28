@@ -1,12 +1,9 @@
 use rand::Rng;
-use std::cmp::Ord;
-use std::cmp::Ordering;
-use std::fmt;
-use std::ops::Add;
-use std::ops::Div;
-use std::ops::Mul;
-use std::ops::Rem;
-use std::ops::Sub;
+use std::{
+    cmp::Ordering,
+    fmt,
+    ops::{Add, Div, Mul, Rem, Sub},
+};
 
 pub struct ExtendedPrecisionInt(Vec<u8>);
 
@@ -23,6 +20,7 @@ impl ExtendedPrecisionInt {
         }
         Self(digits)
     }
+
     pub fn rand(n: u32) -> ExtendedPrecisionInt {
         let mut rng = rand::thread_rng();
         let max = rng.gen_range(1..n);
@@ -33,6 +31,7 @@ impl ExtendedPrecisionInt {
         }
         Self(digits)
     }
+
     pub fn parity(&self) {
         if self.0[self.0.len() - 1] % 2 == 1 {
             println!("{} is odd", self)

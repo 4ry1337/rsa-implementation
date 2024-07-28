@@ -1,5 +1,6 @@
 use crate::extended_precision_int::*;
 use crate::utils::*;
+
 pub struct RSA {
     pub n: ExtendedPrecisionInt,
     pub e: Vec<u32>,
